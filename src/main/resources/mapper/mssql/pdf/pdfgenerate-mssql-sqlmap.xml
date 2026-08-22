@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.example.pdf_server.pdf.service.dao.mssql.PdfGenerateMapper">
+    <!-- 신청내역 상세 (템플릿 join) -->
+    <select id="selectRequestDetailList" parameterType="string"
+            resultType="com.example.pdf_server.pdf.dto.Pppo2000DetailDto">
+        SELECT a.ordno,
+               a.templateid,
+               a.rg_date,
+               a.data,
+               b.title,
+               b.canvas_data AS canvasData,
+               b.thumbnailpath,
+               b.created_at AS createdAt,
+               b.updated_at AS updatedAt,
+               paperwidth,
+               paperheight
+        FROM pppo1100t a
+                 JOIN template b ON a.templateid = b.id
+        WHERE a.ordno = #{ordno}
+    </select>
+
+</mapper>

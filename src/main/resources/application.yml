@@ -1,0 +1,49 @@
+server-host: 192.168.1.100
+
+server:
+  port: 9999
+
+spring:
+  application:
+    name: pdf-server
+
+  datasource:
+    url: jdbc:sqlserver://${server-host}:1433;databaseName=pms02_jwm;encrypt=false;trustServerCertificate=true
+    username: pms01
+    password: pms01
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  kafka:
+    bootstrap-servers: ${server-host}:9092
+
+    consumer:
+      group-id: pdf-server
+      auto-offset-reset: earliest
+
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: >
+          com.example.springbootproject.pms.pp.po.kafka.event.PdfGenerateJob:com.example.pdf_server.pdf.kafka.event.PdfGenerateJob
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+storage:
+  type: minio
+  endpoint: ${MINIO_ENDPOINT:http://${server-host}:9000}
+  access-key: ${MINIO_ACCESS_KEY:admin}
+  secret-key: ${MINIO_SECRET_KEY:admin12345}
+  bucket: ${MINIO_BUCKET:springbootproject}
+
+mybatis:
+  mapper-locations: classpath:mapper/mssql/**/*.xml
+  type-aliases-package: com.example.pdf_server.pdf
+
+logging:
+  level:
+    org.springframework.jdbc: DEBUG
+    org.mybatis: DEBUG
+    org.mybatis.spring: DEBUG

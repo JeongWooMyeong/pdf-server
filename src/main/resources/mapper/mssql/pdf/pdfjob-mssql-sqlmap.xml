@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.example.pdf_server.pdf.service.dao.mssql.PdfJobMapper">
+    <insert id="insertJob">
+
+        INSERT INTO PDF_JOB
+        (
+            JOB_ID,
+            STATUS,
+            CREATE_DATE
+        )
+        VALUES
+            (
+                #{jobid},
+                #{status},
+                getdate()
+            )
+
+    </insert>
+
+    <!-- 작업 시작 -->
+    <update id="updateStart">
+
+        UPDATE PDF_JOB
+        SET
+            STATUS = #{status},
+            START_DATE = GETDATE(),
+            UPDATE_DATE = GETDATE()
+        WHERE JOB_ID = #{jobid}
+
+    </update>
+
+
+
+    <!-- 작업 완료 -->
+    <update id="updateComplete">
+
+        UPDATE PDF_JOB
+        SET
+            STATUS = #{status},
+            COMPLETE_DATE = GETDATE(),
+            UPDATE_DATE = GETDATE()
+        WHERE JOB_ID = #{jobid}
+
+    </update>
+
+
+
+    <!-- 작업 실패 -->
+    <update id="updateFail">
+
+        UPDATE PDF_JOB
+        SET
+            STATUS = #{status},
+            ERROR_MESSAGE = #{errorMessage},
+            UPDATE_DATE = GETDATE()
+        WHERE JOB_ID = #{jobid}
+
+    </update>
+
+    <update id="updateResult">
+
+        UPDATE PDF_JOB
+
+        SET
+            FILE_PATH = #{filepath},
+            FILE_NAME = #{filename},
+            STATUS = 'COMPLETE',
+            COMPLETE_DATE = getdate()
+
+        WHERE JOB_ID = #{jobid}
+
+    </update>
+
+    <select id="selectJob"
+            resultType="com.example.pdf_server.pdf.dto.PdfJobDto">
+
+        SELECT
+            JOB_ID          AS jobid,
+            STATUS          AS status,
+            FILE_PATH       AS filepath,
+            CREATE_DATE     AS createdate,
+            COMPLETE_DATE   AS completedate
+        FROM PDF_JOB
+        WHERE JOB_ID = #{jobid}
+
+    </select>
+
+    <select id="findTimeoutJobs"
+            resultType="com.example.pdf_server.pdf.dto.PdfJobDto">
+        <![CDATA[
+            SELECT
+            JOB_ID        AS jobid,
+            STATUS        AS status,
+            FILE_PATH     AS filepath,
+            ERROR_MESSAGE AS errormessage,
+            RETRY_COUNT   AS retrycount,
+            CREATE_DATE   AS createdate,
+            START_DATE    AS startdate,
+            COMPLETE_DATE AS completedate,
+            UPDATE_DATE   AS updatedate
+
+            FROM PDF_JOB
+
+            WHERE STATUS = 'PROCESSING'
+            AND UPDATE_DATE < DATEADD(MINUTE, -30, GETDATE())
+        ]]>
+    </select>
+
+    <update id="updateHeartbeat">
+
+        UPDATE PDF_JOB
+
+        SET
+            UPDATE_DATE = GETDATE()
+
+        WHERE JOB_ID = #{jobid}
+
+    </update>
+
+</mapper>
