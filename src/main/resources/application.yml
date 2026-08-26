@@ -1,4 +1,4 @@
-server-host: 1234
+server-host: 192.168.1.104
 
 server:
   port: 9999
