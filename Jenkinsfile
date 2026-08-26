@@ -53,8 +53,8 @@ pipeline {
             steps {
                 withEnv(["KUBECONFIG=${env.KUBECONFIG}"]) {
                     bat """
-                        kubectl apply -f C:\\Project\\erp_server\\k8s\\pdf-deployment.yaml
-                        kubectl apply -f C:\\Project\\erp_server\\k8s\\pdf-service.yaml
+                        kubectl apply -f C:\\Project\\pdf_server\\k8s\\pdf-deployment.yaml
+                        kubectl apply -f C:\\Project\\pdf_server\\k8s\\pdf-service.yaml
 
                         kubectl set image deployment/pdf-server-deployment pdf-server=${DOCKER_IMAGE}:${DOCKER_TAG}
 
