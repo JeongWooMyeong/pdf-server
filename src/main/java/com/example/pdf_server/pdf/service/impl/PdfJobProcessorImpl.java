@@ -155,7 +155,7 @@ public class PdfJobProcessorImpl implements PdfJobProcessor {
             // PDF 서버 → Kafka
             pdfResultProducer.sendComplete(
                     jobId,
-                    "/api/pppo2000/pdf/download/" + jobId
+                    "/api/pppo2000/pdf/preview/" + jobId
             );
 
 
