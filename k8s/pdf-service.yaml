@@ -11,5 +11,4 @@ spec:
     - protocol: TCP
       port: 9999
       targetPort: 9999
-      nodePort: 30081 #브라우저 접속 포트 (http://localhost:30081)
   type: ClusterIP
