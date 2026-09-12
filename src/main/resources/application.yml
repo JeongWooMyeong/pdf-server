@@ -47,3 +47,6 @@ logging:
     org.springframework.jdbc: DEBUG
     org.mybatis: DEBUG
     org.mybatis.spring: DEBUG
+
+pdf:
+  image-base-url: ${PDF_IMAGE_BASE_URL:http://localhost:8081}
