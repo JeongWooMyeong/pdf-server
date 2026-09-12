@@ -11,11 +11,11 @@ public class PdfServerApplication{
 
     public static void main(String[] args) throws Exception{
 
-        String ip = NetWorkUtil.getWifiIp();
-
-        System.out.println("현재 서버 IP : " + ip);
-
-        System.setProperty("server-host", ip);
+//        String ip = NetWorkUtil.getWifiIp();
+//
+//        System.out.println("현재 서버 IP : " + ip);
+//
+//        System.setProperty("server-host", ip);
 
         SpringApplication.run(PdfServerApplication.class, args);
     }
