@@ -1,10 +1,13 @@
 package com.example.pdf_server.pdf.kafka.producer;
 
 import com.example.pdf_server.pdf.kafka.event.PdfGenerateResult;
+import com.example.pdf_server.pdf.kafka.event.PdfPreviewFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +22,8 @@ public class PdfResultProducer {
 
     public void sendComplete(
             String jobId,
-            String downloadUrl
+            String downloadUrl,
+            List<PdfPreviewFile> files
     ) {
 
         PdfGenerateResult result =
@@ -27,7 +31,8 @@ public class PdfResultProducer {
                         jobId,
                         "COMPLETE",
                         downloadUrl,
-                        null
+                        null,
+                        files
                 );
 
 
@@ -55,7 +60,8 @@ public class PdfResultProducer {
                         jobId,
                         "FAIL",
                         null,
-                        message
+                        message,
+                        null
                 );
 
 

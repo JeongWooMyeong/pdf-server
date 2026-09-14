@@ -14,10 +14,10 @@ public interface PdfJobService {
 
     void saveResult(
             String jobid,
+            String ordno,
             byte[] result,
             String extension
     );
-
 
     void start(
             String jobid

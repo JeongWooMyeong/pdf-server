@@ -1,24 +1,19 @@
 package com.example.pdf_server.pdf.kafka.event;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
+@Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PdfGenerateResult {
+public class PdfGenerateResultData {
 
-    private String jobid;
-
-    private String status;
-
-    private String downloadUrl;
-
-    private String message;
+    private byte[] result;
 
     private List<PdfPreviewFile> files;
-
 }

@@ -37,43 +37,56 @@ public class PdfJobServiceImpl implements PdfJobService {
     @Override
     public void saveResult(
             String jobid,
+            String ordno,
             byte[] result,
             String extension
     ) {
 
         try {
 
+            String filename;
+
             /*
-             * 파일명 생성
+             * 단건 PDF
+             *
+             * 예:
+             * TP051997496079.pdf
              */
-            String filename =
-                    "PDF_"
-                            + LocalDateTime.now()
-                            .format(
-                                    DateTimeFormatter.ofPattern(
-                                            "yyyyMMdd_HHmmss"
-                                    )
-                            )
-                            + "_"
-                            + UUID.randomUUID()
-                            .toString()
-                            .substring(0, 6)
-                            + extension;
+            if (".pdf".equalsIgnoreCase(extension)) {
+
+                filename =
+                        ordno + ".pdf";
+
+            }
+            /*
+             * 다건 ZIP
+             *
+             * 예:
+             * fdca5902-fe73-40d7-ac03-2aaf946fe668.zip
+             */
+            else if (".zip".equalsIgnoreCase(extension)) {
+
+                filename =
+                        jobid + ".zip";
+
+            }
+            else {
+
+                throw new IllegalArgumentException(
+                        "지원하지 않는 확장자: " + extension
+                );
+            }
 
 
             /*
              * MinIO Object 경로
-             *
-             * bucket
-             *   └── pdf/
-             *       └── PDF_xxx.pdf
              */
             String objectName =
                     "pdf/" + filename;
 
 
             /*
-            minio 공통
+             * MinIO 저장
              */
             minioStorageService.upload(
                     objectName,
@@ -83,8 +96,7 @@ public class PdfJobServiceImpl implements PdfJobService {
 
 
             /*
-             * DB에는 실제 파일 자체가 아니라
-             * MinIO Object 정보 저장
+             * DB 저장
              */
             pdfJobMapper.updateResult(
                     jobid,
@@ -99,9 +111,7 @@ public class PdfJobServiceImpl implements PdfJobService {
                     "PDF 파일 MinIO 저장 실패",
                     e
             );
-
         }
-
     }
 
 

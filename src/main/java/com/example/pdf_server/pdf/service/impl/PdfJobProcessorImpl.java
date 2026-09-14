@@ -1,5 +1,6 @@
 package com.example.pdf_server.pdf.service.impl;
 
+import com.example.pdf_server.pdf.kafka.event.PdfGenerateResultData;
 import com.example.pdf_server.pdf.service.PdfGenerateService;
 import com.example.pdf_server.pdf.dto.PdfJobDto;
 import com.example.pdf_server.pdf.kafka.event.PdfGenerateJob;
@@ -110,26 +111,15 @@ public class PdfJobProcessorImpl implements PdfJobProcessor {
 
 
             // PDF / ZIP 생성
-            byte[] result;
+            PdfGenerateResultData generated =
+                    pdfGenerateService.generate(
+                            job.getType(),
+                            job.getOrdnos(),
+                            jobId
+                    );
 
-            if (
-                    job.getType()
-                            == PdfGenerateJob.GenerateType.PDF
-            ) {
-
-                result =
-                        pdfGenerateService.generatePdf(
-                                job.getOrdnos().get(0)
-                        );
-
-            } else {
-
-                result =
-                        pdfGenerateService.generateZip(
-                                job.getOrdnos()
-                        );
-
-            }
+            byte[] result =
+                    generated.getResult();
 
 
             // 확장자
@@ -140,12 +130,27 @@ public class PdfJobProcessorImpl implements PdfJobProcessor {
                             : ".zip";
 
 
-            // MinIO 저장
-            pdfJobService.saveResult(
-                    jobId,
-                    result,
-                    extension
-            );
+            if (job.getType() == PdfGenerateJob.GenerateType.PDF) {
+
+                String ordno =
+                        job.getOrdnos().get(0);
+
+                pdfJobService.saveResult(
+                        jobId,
+                        ordno,
+                        result,
+                        ".pdf"
+                );
+
+            } else {
+
+                pdfJobService.saveResult(
+                        jobId,
+                        null,
+                        result,
+                        ".zip"
+                );
+            }
 
 
             // 완료
@@ -155,7 +160,8 @@ public class PdfJobProcessorImpl implements PdfJobProcessor {
             // PDF 서버 → Kafka
             pdfResultProducer.sendComplete(
                     jobId,
-                    "/api/pppo2000/pdf/preview/" + jobId
+                    "/api/pppo2000/pdf/preview/" + jobId,
+                    generated.getFiles()
             );
 
 
