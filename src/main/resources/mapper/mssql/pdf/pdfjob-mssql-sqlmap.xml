@@ -70,7 +70,8 @@
             FILE_PATH = #{filepath},
             FILE_NAME = #{filename},
             STATUS = 'COMPLETE',
-            COMPLETE_DATE = getdate()
+            COMPLETE_DATE = getdate(),
+            ALL_FILE_PATH = #{allfilepath}
 
         WHERE JOB_ID = #{jobid}
 

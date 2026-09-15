@@ -39,7 +39,8 @@ public class PdfJobServiceImpl implements PdfJobService {
             String jobid,
             String ordno,
             byte[] result,
-            String extension
+            String extension,
+            byte[] allpdf
     ) {
 
         try {
@@ -95,13 +96,42 @@ public class PdfJobServiceImpl implements PdfJobService {
             );
 
 
+
+            /*
+             * 전체 인쇄용 PDF
+             *
+             * 다건일 때만 allpdf가 존재함
+             */
+            String allFilePath = null;
+
+            if (
+                    ".zip".equalsIgnoreCase(extension)
+                            && allpdf != null
+                            && allpdf.length > 0
+            ) {
+
+                allFilePath =
+                        "pdf/"
+                                + jobid
+                                + "/all.pdf";
+
+
+                minioStorageService.upload(
+                        allFilePath,
+                        allpdf,
+                        "application/pdf"
+                );
+            }
+
+
             /*
              * DB 저장
              */
             pdfJobMapper.updateResult(
                     jobid,
                     objectName,
-                    filename
+                    filename,
+                    allFilePath
             );
 
 

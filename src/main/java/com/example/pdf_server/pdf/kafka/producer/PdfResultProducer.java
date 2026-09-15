@@ -23,7 +23,8 @@ public class PdfResultProducer {
     public void sendComplete(
             String jobId,
             String downloadUrl,
-            List<PdfPreviewFile> files
+            List<PdfPreviewFile> files,
+            String allDownloadUrl
     ) {
 
         PdfGenerateResult result =
@@ -32,7 +33,8 @@ public class PdfResultProducer {
                         "COMPLETE",
                         downloadUrl,
                         null,
-                        files
+                        files,
+                        allDownloadUrl
                 );
 
 
@@ -61,6 +63,7 @@ public class PdfResultProducer {
                         "FAIL",
                         null,
                         message,
+                        null,
                         null
                 );
 

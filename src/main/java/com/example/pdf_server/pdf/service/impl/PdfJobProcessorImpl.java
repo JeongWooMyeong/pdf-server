@@ -139,7 +139,8 @@ public class PdfJobProcessorImpl implements PdfJobProcessor {
                         jobId,
                         ordno,
                         result,
-                        ".pdf"
+                        ".pdf",
+                        null
                 );
 
             } else {
@@ -148,7 +149,8 @@ public class PdfJobProcessorImpl implements PdfJobProcessor {
                         jobId,
                         null,
                         result,
-                        ".zip"
+                        ".zip",
+                        generated.getAllPdf()
                 );
             }
 
@@ -156,12 +158,23 @@ public class PdfJobProcessorImpl implements PdfJobProcessor {
             // 완료
             pdfJobService.complete(jobId);
 
+            // PDF 서버 → Kafka
+
+            String allDownloadUrl = null;
+
+            if (job.getType() == PdfGenerateJob.GenerateType.ZIP) {
+
+                allDownloadUrl =
+                        "/api/pppo2000/pdf/print/" + jobId;
+            }
+
 
             // PDF 서버 → Kafka
             pdfResultProducer.sendComplete(
                     jobId,
                     "/api/pppo2000/pdf/preview/" + jobId,
-                    generated.getFiles()
+                    generated.getFiles(),
+                    allDownloadUrl
             );
 
 

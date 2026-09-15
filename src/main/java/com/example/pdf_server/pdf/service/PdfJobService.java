@@ -16,7 +16,8 @@ public interface PdfJobService {
             String jobid,
             String ordno,
             byte[] result,
-            String extension
+            String extension,
+            byte[] allpdf
     );
 
     void start(

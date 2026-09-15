@@ -21,4 +21,6 @@ public class PdfGenerateResult {
 
     private List<PdfPreviewFile> files;
 
+    private String allDownloadUrl;
+
 }

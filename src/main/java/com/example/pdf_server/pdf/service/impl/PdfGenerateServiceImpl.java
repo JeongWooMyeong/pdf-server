@@ -10,13 +10,18 @@ import com.example.pdf_server.pdf.service.PdfGenerateService;
 import com.example.pdf_server.pdf.service.dao.mssql.PdfGenerateMapper;
 import com.example.pdf_server.pdf.storage.MinioStorageService;
 import lombok.RequiredArgsConstructor;
+import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.apache.pdfbox.io.IOUtils;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
 
 @Service
 @RequiredArgsConstructor
@@ -83,6 +88,8 @@ public class PdfGenerateServiceImpl implements PdfGenerateService {
              * =========================================
              */
 
+            List<byte[]> pdfList = new ArrayList<>();
+
             for (String ordno : ordnos) {
 
                 byte[] pdfBytes =
@@ -102,6 +109,11 @@ public class PdfGenerateServiceImpl implements PdfGenerateService {
                         pdfBytes,
                         "application/pdf"
                 );
+
+                /*
+                전체 PDF merge 용
+                 */
+                pdfList.add(pdfBytes);
 
 
                 /*
@@ -157,6 +169,7 @@ public class PdfGenerateServiceImpl implements PdfGenerateService {
                 return PdfGenerateResultData.builder()
                         .result(pdfBytes)
                         .files(files)
+                        .allPdf(null)
                         .build();
             }
 
@@ -167,8 +180,10 @@ public class PdfGenerateServiceImpl implements PdfGenerateService {
              *
              * 개별 PDF는 이미 MinIO에 저장됨.
              * 여기서는 ZIP만 생성
+             * 전체 인쇄용 all.pdf 생성
              * =========================================
              */
+            byte[] zipBytes;
 
             try (
                     ByteArrayOutputStream baos =
@@ -178,22 +193,14 @@ public class PdfGenerateServiceImpl implements PdfGenerateService {
                             new ZipOutputStream(baos)
             ) {
 
-                for (String ordno : ordnos) {
+                for (int i = 0; i < ordnos.size(); i++) {
 
-                    byte[] pdfBytes =
-                            minioStorageService.download(
-                                    "preview/"
-                                            + jobId
-                                            + "/"
-                                            + ordno
-                                            + ".pdf"
-                            );
+                    String ordno = ordnos.get(i);
 
+                    byte[] pdfBytes = pdfList.get(i);
 
                     ZipEntry entry =
-                            new ZipEntry(
-                                    ordno + ".pdf"
-                            );
+                            new ZipEntry(ordno + ".pdf");
 
                     zos.putNextEntry(entry);
 
@@ -204,12 +211,54 @@ public class PdfGenerateServiceImpl implements PdfGenerateService {
 
                 zos.finish();
 
-
-                return PdfGenerateResultData.builder()
-                        .result(baos.toByteArray())
-                        .files(files)
-                        .build();
+                zipBytes = baos.toByteArray();
             }
+
+            /*
+             * -----------------------------------------
+             * 전체 인쇄용 PDF 생성
+             *
+             * PDF 순서는 ordnos 순서
+             * -----------------------------------------
+             */
+
+            byte[] allPdfBytes;
+
+            try (
+                    ByteArrayOutputStream baos =
+                            new ByteArrayOutputStream()
+            ) {
+
+                PDFMergerUtility merger =
+                        new PDFMergerUtility();
+
+                merger.setDestinationStream(baos);
+
+                for (byte[] pdfBytes : pdfList) {
+
+                    merger.addSource(
+                            new RandomAccessReadBuffer(pdfBytes)
+                    );
+                }
+
+                merger.mergeDocuments(null);
+
+                allPdfBytes =
+                        baos.toByteArray();
+            }
+
+
+            /*
+             * =========================================
+             * 결과 반환
+             * =========================================
+             */
+
+            return PdfGenerateResultData.builder()
+                    .result(zipBytes)
+                    .files(files)
+                    .allPdf(allPdfBytes)
+                    .build();
 
         } catch (Exception e) {
 

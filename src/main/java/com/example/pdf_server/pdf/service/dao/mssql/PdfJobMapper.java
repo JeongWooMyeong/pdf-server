@@ -38,7 +38,8 @@ public interface PdfJobMapper {
     void updateResult(
             @Param("jobid") String jobid,
             @Param("filepath") String filepath,
-            @Param("filename") String filename
+            @Param("filename") String filename,
+            @Param("allfilepath") String allfilepath
     );
 
     PdfJobDto selectJob(
